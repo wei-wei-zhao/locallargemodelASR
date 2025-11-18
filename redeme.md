@@ -1,0 +1,1 @@
+## vosk-model-small-cn-0.22，这是“小模型”，速度快但准确率一般。你用的是 vosk-model-small-cn-0.22，这是“小模型”，速度快但准确率一般。

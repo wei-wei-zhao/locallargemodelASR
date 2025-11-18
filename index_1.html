@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+
+<html>
+    <title>识别文件路径</title>
+<body>
+    <button id="recordBtn">按住录音</button>
+    <div id="result"></div>
+
+    <script>
+        const recordBtn = document.getElementById('recordBtn');
+        const resultDiv = document.getElementById('result');
+
+        // 1. 获取麦克风权限
+        recordBtn.onmousedown = async () => {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            const mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm' });
+            let chunks = [];
+
+            // 2. 开始录音
+            mediaRecorder.start();
+            resultDiv.textContent = "录音中...";
+
+            // 3. 停止录音并上传
+            recordBtn.onmouseup = () => {
+                mediaRecorder.stop();
+                stream.getTracks().forEach(track => track.stop());
+                resultDiv.textContent = "识别中...";
+            };
+
+            // 4. 处理录音数据
+            mediaRecorder.ondataavailable = (e) => chunks.push(e.data);
+            mediaRecorder.onstop = async () => {
+                const blob = new Blob(chunks, { type: 'audio/webm' });
+                const formData = new FormData();
+                formData.append('audio', blob, 'recording.webm');
+
+                // 5. 发送到后端识别
+                const response = await fetch('http://10.25.202.55:3000/recognize', {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await response.json();
+                resultDiv.textContent = `识别结果：${data.text}`;
+                chunks = [];
+            };
+        };
+    </script>
+</body>
+<style>
+  #recordBtn {
+    width: 200px;
+    height: 100px;
+    font-size: 30px;
+  }
+</style>
+</html>
